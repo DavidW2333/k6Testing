@@ -17,13 +17,22 @@ export default function(){
         'x-api-key': 'reqres-free-v1', 
     }
     const res = http.post(url, data, {headers})
+    const resBody = res.json()
 
     check(res, {
         "status is ok": (r) => r.status === 201,
-        "The response has a name": (r) => r.json().hasOwnProperty('name'),
-        "The response has a job":(r)=> r.json().hasOwnProperty('job'),
+        //"The response has a name": (r) => r.json().hasOwnProperty('name'),
+        //"The response has a job":(r)=> r.json().hasOwnProperty('job'),
         "The response has an id": (r) => r.json().hasOwnProperty('id'),
         "The response has a createdat date": (r) => r.json().hasOwnProperty('createdAt'),
+        "The response has name and job": () => {if ('name' in resBody && 'job' in resBody){
+            return resBody.name == 'morpheus' && resBody.job == 'leader'
+        }
+
+        else{
+            return "There is no name and job";
+        }
+    }
 
     });
     sleep(1);
