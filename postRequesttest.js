@@ -1,12 +1,37 @@
 import http from 'k6/http';
-import {check, sleep} from 'k6'
-const url = 'https://reqres.in/api/users'; //free api example
+import {check, group, sleep} from 'k6'
+
 export const options = {
     vus: 1,
     iterations: 2,
 };
 
-export default function(){
+const httpBinTest = () => {
+    const httpUrl = 'https://httpbin.org/post'
+    const httpData = JSON.stringify({
+        name: 'David',
+        job: 'test analyst',
+    });
+
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    const res = http.post(httpUrl, httpData, {headers})
+    console.log('Response Body:', JSON.stringify(res.json(), null, 2));
+
+    check(res, {
+        'status is 201': (r) => r.status === 200,
+        'The http response has a name': (r) => r.json().json.name === 'David',
+        'The http response has a job': (r) => r.json().json.job === 'test analyst'
+
+    })
+
+} 
+
+const reqresTest =() => {
+    const url = 'https://reqres.in/api/users'; //free api example
+    
     const data = JSON.stringify({
         name: 'morpheus',
         job: 'leader',
@@ -38,4 +63,9 @@ export default function(){
     sleep(1);
     
 
+}
+
+export default function(){
+    reqresTest();
+    httpBinTest();
 }
