@@ -2,8 +2,8 @@ import http from 'k6/http';
 import {check, group, sleep} from 'k6'
 
 export const options = {
-    vus: 1,
-    iterations: 2,
+    vus: 3,
+    iterations: 4,
 };
 
 const httpBinTest = () => {
@@ -28,8 +28,8 @@ const httpBinTest = () => {
     })
 
 } 
-
-const reqresTest =() => {
+//post request
+const reqresPostTest =() => {
     const url = 'https://reqres.in/api/users'; //free api example
     
     const data = JSON.stringify({
@@ -64,8 +64,58 @@ const reqresTest =() => {
     
 
 }
+//get request
+const reqresGetTest = () => {
+    const reqresUrl = 'https://reqres.in/api/users?page=2';
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    const res = http.get(reqresUrl);
+    check(res, {
+        "reqresTest2 response status is ok": (r) => r.status === 200,
+        "The response has 2 pages": (r) => r.json().page === 2,
+        "The response has 5 datas": (r) => r.json().data.length === 6
+    });
+
+    //console.log(JSON.stringify(res.json(), null, 2))
+
+
+
+}
+//http put request
+const reqresPutTest = () => {
+    const reqresPutTestURL = "https://reqres.in/api/users/2";
+    const headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': 'reqres-free-v1',
+        
+    };
+    const data = JSON.stringify({
+        "name": "David New Name",
+        "job": "software Test engineer"
+    })
+    const res = http.put(reqresPutTestURL, data, {headers} )
+    check(res, {
+        "reqresPutTest response status is ok": (r) => r.status ===200,
+        "The response has updated the name and the job": ()=> {
+            if ('name' in res.json() && 'job' in res.json()){
+                return res.json().name === "David New Name" && res.json().job ==="software Test engineer"
+            }
+
+            else{
+                return "the updates has failed"
+            }
+
+        }
+    });
+    console.log(JSON.stringify(res.json(), null, 2))
+}
 
 export default function(){
-    reqresTest();
+    reqresPostTest();
+    reqresGetTest();
+    reqresPutTest();
     httpBinTest();
+    //K6_OUT=influxdb=http://localhost:8086/k6 k6 run /Users/seanreader/k6performanceTesting/postRequesttest.js
 }
